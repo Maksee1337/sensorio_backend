@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  password String?
+  devices  Device[]
+}
+
+model Device {
+  id      Int      @id @default(autoincrement())
+  name    String
+  apiKey  String   @unique
+  user    User     @relation(fields: [userId], references: [id])
+  userId  Int
+  sensors Sensor[]
+}
+
+model Sensor {
+  id           Int           @id @default(autoincrement())
+  type         SensorType
+  apiKey       String        @unique
+  deviceId     Int
+  device       Device        @relation(fields: [deviceId], references: [id])
+  lastUpdate   DateTime?
+  measurements Measurement[]
+}
+
+model Measurement {
+  id        Int      @id @default(autoincrement())
+  value     Float
+  sensorId  Int
+  sensor    Sensor   @relation(fields: [sensorId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+enum SensorType {
+  TEMPERATURE
+  HUMIDITY
+  PRESSURE
+  LIGHT
+}
